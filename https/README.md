@@ -1,4 +1,37 @@
-# Admin only
+# SSL Certificates
+
+## Dev local (chaque développeur)
+
+Les fichiers `.pem` ne sont pas committés. Chaque dev génère son propre cert :
+
+```bash
+# 1. Installer mkcert (une seule fois)
+mkcert -install
+
+# 2. Générer le cert pour wstd.dev
+cd /path/to/webstudio/https
+mkcert wstd.dev "*.wstd.dev"
+
+# 3. Copier les fichiers générés
+cp wstd.dev+1.pem fullchain.pem
+cp wstd.dev+1-key.pem privkey.pem
+
+# 4. Régénérer haproxy.pem
+cat fullchain.pem privkey.pem > haproxy.pem
+
+# 5. Nettoyer
+rm wstd.dev+1.pem wstd.dev+1-key.pem
+```
+
+Cert valide ~2 ans. `/etc/hosts` doit avoir :
+
+```
+127.0.0.1 wstd.dev vite.wstd.dev
+```
+
+---
+
+# Admin only (prod — Let's Encrypt)
 
 Based on this article https://dev.to/istarkov/fast-and-easy-way-to-setup-web-developer-certificates-450e
 
