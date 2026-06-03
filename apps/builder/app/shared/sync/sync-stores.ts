@@ -49,6 +49,7 @@ import {
   $instanceContextMenu,
 } from "~/shared/nano-states";
 import { $ephemeralStyles } from "~/canvas/stores";
+import { $lateBinding } from "~/shared/nano-states/template-binding";
 import {
   ImmerhinSyncObject,
   NanostoresSyncObject,
@@ -151,6 +152,7 @@ export const createObjectPool = () => {
       $registeredComponentMetas
     ),
     new NanostoresSyncObject("registeredTemplates", $registeredTemplates),
+    new NanostoresSyncObject("lateBinding", $lateBinding),
     new NanostoresSyncObject("canvasScrollbarWidth", $canvasScrollbarSize),
     new NanostoresSyncObject("systemDataByPage", $systemDataByPage),
   ]);
