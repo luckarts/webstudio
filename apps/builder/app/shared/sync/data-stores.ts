@@ -58,6 +58,8 @@ export const $styles = atom<Styles>(new Map());
 
 export const $marketplaceProduct = atom<undefined | MarketplaceProduct>();
 
+export const $buildId = atom<string | undefined>(undefined);
+
 export const $publisherHost = atom<string>("wstd.work");
 
 /**
