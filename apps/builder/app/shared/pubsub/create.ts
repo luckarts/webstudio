@@ -70,27 +70,30 @@ export const createPubsub = <PublishMap>() => {
     return { action, token };
   };
 
-  const unwrapAction = (payload: unknown) => {
+  const unwrapAction = (payload: unknown): Action<keyof PublishMap> | null => {
     if (typeof payload !== "object" || payload === null) {
       if (process.env.IS_STROYBOOK) {
         return { type: "storybook", payload: payload } as Action<
           keyof PublishMap
         >;
       }
-      console.error("Invalid payload", payload);
-      throw new Error("Invalid payload");
+      // Not a pubsub message (browser extensions, other frames), ignore silently
+      return null;
     }
 
     if (false === "token" in payload) {
-      throw new Error("Invalid payload, not wrapped");
+      // Not a pubsub message, ignore silently
+      return null;
     }
 
     if (payload.token !== token) {
-      throw new Error("Invalid token");
+      console.warn("Pubsub: message with invalid token ignored", payload);
+      return null;
     }
 
     if (false === "action" in payload) {
-      throw new Error("Invalid payload, not wrapped");
+      console.error("Pubsub: wrapped message missing action field", payload);
+      return null;
     }
 
     // Hide the token from the subsequent subscribers
@@ -100,6 +103,7 @@ export const createPubsub = <PublishMap>() => {
 
   const handleMessage = (event: MessageEvent) => {
     const action = unwrapAction(event.data);
+    if (action === null) return;
     const type = action.type;
     // Execute all updates within a single batch to improve performance
     batchUpdate(() => {
