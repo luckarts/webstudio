@@ -36,6 +36,9 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# local config files
+apps/builder/vite.config.ts
+
 # data
 /data
 *.db
