@@ -98,8 +98,13 @@ export default defineConfig(({ mode }) => {
       proxy: {},
 
       https: {
-        key: readFileSync("../../https/privkey.pem"),
-        cert: readFileSync("../../https/fullchain.pem"),
+        // Certs hors repo via WSTD_HTTPS_DIR (branche-proof), fallback ../../https.
+        key: readFileSync(
+          `${process.env.WSTD_HTTPS_DIR ?? "../../https"}/privkey.pem`
+        ),
+        cert: readFileSync(
+          `${process.env.WSTD_HTTPS_DIR ?? "../../https"}/fullchain.pem`
+        ),
       },
       cors: ((
         req: IncomingMessage,
