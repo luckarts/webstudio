@@ -5,3 +5,5 @@ export * from "./template-id";
 export * from "./contribution";
 export * from "./template-meta";
 export * from "./template-merge";
+export * from "./live-merge";
+export * from "./virtual-expand";
