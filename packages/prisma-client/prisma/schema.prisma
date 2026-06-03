@@ -159,6 +159,7 @@ model Project {
   previewImageAssetId       String?
   marketplaceApprovalStatus MarketplaceApprovalStatus    @default(UNLISTED)
   latestStaticBuild         LatestStaticBuildPerProject?
+  buildSnapshots            BuildSnapshot[]
 
   @@unique([id, isDeleted])
   @@unique([domain, isDeleted])
@@ -201,11 +202,16 @@ model Build {
   resources             String @default("[]")
   instances             String @default("[]")
   marketplaceProduct    String @default("{}")
+  templateMeta          String?
+  templateRefs          String?
+  globalStyles          String @default("[]")
+  customCss             String @default("")
 
   deployment    String?
   publishStatus PublishStatus @default(PENDING)
 
   latestStaticBuildPerProject LatestStaticBuildPerProject?
+  buildSnapshots              BuildSnapshot[]
 
   @@id([id, projectId])
   // ApprovedMarketplaceProduct view performance index
@@ -273,6 +279,21 @@ model ProjectDomain {
 
   @@id([projectId, domainId])
   @@index([domainId])
+}
+
+model BuildSnapshot {
+  id        String   @id @default(uuid())
+  buildId   String
+  projectId String
+  reason    String   @default("sync")
+  data      String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  build   Build   @relation(fields: [buildId, projectId], references: [id, projectId])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@index([buildId])
+  @@index([projectId])
 }
 
 view LatestStaticBuildPerProject {
