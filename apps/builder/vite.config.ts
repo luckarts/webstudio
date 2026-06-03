@@ -1,5 +1,5 @@
 import path, { resolve } from "node:path";
-import { defineConfig, type CorsOptions } from "vite";
+import { defineConfig, loadEnv, type CorsOptions } from "vite";
 import { vitePlugin as remix } from "@remix-run/dev";
 import { vercelPreset } from "@vercel/remix/vite";
 import type { IncomingMessage } from "node:http";
@@ -26,6 +26,7 @@ const conditions = hasPrivateFolders
   : ["webstudio"];
 
 export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
   if (mode === "development") {
     // Enable self-signed certificates for development service 2 service fetch calls.
     // This is particularly important for secure communication with the oauth.ws.token endpoint.
@@ -101,10 +102,10 @@ export default defineConfig(({ mode }) => {
         mode === "development"
           ? {
               key: readFileSync(
-                `${process.env.WSTD_HTTPS_DIR ?? "../../https"}/privkey.pem`
+                `${env.WSTD_HTTPS_DIR ?? "../../https"}/privkey.pem`
               ),
               cert: readFileSync(
-                `${process.env.WSTD_HTTPS_DIR ?? "../../https"}/fullchain.pem`
+                `${env.WSTD_HTTPS_DIR ?? "../../https"}/fullchain.pem`
               ),
             }
           : undefined,
