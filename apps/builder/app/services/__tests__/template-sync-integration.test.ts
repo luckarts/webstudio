@@ -1,11 +1,12 @@
 import { describe, it, expect } from "vitest";
 import type { Instance, Prop, StyleDecl } from "@webstudio-is/sdk";
-import type { StyleValue } from "@webstudio-is/css-engine";
+import type { StyleValue, StyleProperty } from "@webstudio-is/css-engine";
 import type { Change } from "@webstudio-is/template";
 import {
   computeScopedDiff,
   resolveMerge,
   copySubtree,
+  computeContributions,
 } from "@webstudio-is/template";
 
 // ---------------------------------------------------------------------------
@@ -41,7 +42,7 @@ const makeStyleDecl = (
 ): StyleDecl => ({
   styleSourceId,
   breakpointId,
-  property,
+  property: property as StyleProperty,
   value,
 });
 

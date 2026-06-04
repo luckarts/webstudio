@@ -55,7 +55,9 @@ export const TemplateSyncPanel = () => {
         | undefined;
       const changedChildren =
         changedChildrenArray && changedChildrenArray.length > 0
-          ? new Map(changedChildrenArray.map((c) => [c.id, c.children]))
+          ? (new Map(
+              changedChildrenArray.map((c) => [c.id, c.children])
+            ) as Map<string, Instance["children"]>)
           : undefined;
 
       if (
