@@ -140,5 +140,12 @@ export default defineConfig(({ mode }) => {
       }) as never,
     },
     envPrefix: "GITHUB_",
+    test: {
+      server: {
+        deps: {
+          inline: ["@webstudio-is/http-client"],
+        },
+      },
+    },
   };
 });
