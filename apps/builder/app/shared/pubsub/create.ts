@@ -103,7 +103,9 @@ export const createPubsub = <PublishMap>() => {
 
   const handleMessage = (event: MessageEvent) => {
     const action = unwrapAction(event.data);
-    if (action === null) return;
+    if (action === null) {
+      return;
+    }
     const type = action.type;
     // Execute all updates within a single batch to improve performance
     batchUpdate(() => {

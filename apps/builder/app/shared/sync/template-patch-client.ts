@@ -1,4 +1,9 @@
-import type { Prop, StyleDecl, StyleSources } from "@webstudio-is/sdk";
+import type {
+  Instance,
+  Prop,
+  StyleDecl,
+  StyleSources,
+} from "@webstudio-is/sdk";
 import { $instances, $props, $styles, $styleSources } from "./data-stores";
 import { serverSyncStore } from "./sync-stores";
 
@@ -6,7 +11,7 @@ export type TemplatePatchSetV2 = {
   props?: Array<{ id: string; value: Prop }>;
   styles?: Array<{ key: string; value: StyleDecl }>;
   styleSources?: StyleSources;
-  changedChildren?: Map<string, any>;
+  changedChildren?: Map<string, Instance["children"]>;
 };
 
 export const applyTemplatePatches = (patches: TemplatePatchSetV2) => {

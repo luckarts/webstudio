@@ -30,7 +30,9 @@ export const TemplateSyncPanel = () => {
   >([]);
 
   const handleSync = (force = false) => {
-    if (!buildId || !projectId) return;
+    if (!buildId || !projectId) {
+      return;
+    }
 
     doSync({ buildId, projectId, force }, (result) => {
       const outdatedCount = (result.outdatedCount as number) ?? 0;
@@ -82,11 +84,15 @@ export const TemplateSyncPanel = () => {
 
       const appliedInstances = changedChildrenArray?.length ?? 0;
       const parts = [];
-      if ((result.appliedProps as number) > 0)
+      if ((result.appliedProps as number) > 0) {
         parts.push(`${result.appliedProps as number} props`);
-      if ((result.appliedStyles as number) > 0)
+      }
+      if ((result.appliedStyles as number) > 0) {
         parts.push(`${result.appliedStyles as number} styles`);
-      if (appliedInstances > 0) parts.push(`${appliedInstances} text nodes`);
+      }
+      if (appliedInstances > 0) {
+        parts.push(`${appliedInstances} text nodes`);
+      }
       toast.success(
         `Synced ${outdatedCount} template(s)${parts.length > 0 ? `: ${parts.join(" + ")}` : ""}`
       );

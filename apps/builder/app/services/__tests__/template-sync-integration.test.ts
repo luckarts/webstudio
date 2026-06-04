@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import type { Instance, StyleDecl, StyleValue } from "@webstudio-is/sdk";
+import type { Instance, Prop, StyleDecl, StyleValue } from "@webstudio-is/sdk";
+import type { Change } from "@webstudio-is/template";
 import {
   buildParentMap,
   getAncestors,
@@ -56,7 +57,7 @@ const makeSS = (instanceId: string, values: string[]) => ({
 const makeFragment = (
   instances: Instance[],
   opts?: {
-    props?: any[];
+    props?: Prop[];
     styles?: StyleDecl[];
     styleSourceSelections?: { instanceId: string; values: string[] }[];
     styleSources?: { id: string; type: "local" }[];
@@ -120,8 +121,10 @@ describe("Template Sync — Integration (full pipeline)", () => {
 
     // Step 1: Compute scoped diff (template vs user)
     const diff = computeScopedDiff(registered, userFrag);
-    const styleChanges = diff.changes.filter((c: any) => c.type === "style");
-    const textChanges = diff.changes.filter((c: any) => c.type === "children");
+    const styleChanges = diff.changes.filter((c: Change) => c.type === "style");
+    const textChanges = diff.changes.filter(
+      (c: Change) => c.type === "children"
+    );
     expect(styleChanges.length).toBeGreaterThanOrEqual(1);
     expect(textChanges.length).toBeGreaterThanOrEqual(1);
 
@@ -139,22 +142,22 @@ describe("Template Sync — Integration (full pipeline)", () => {
 
     // User values preserved (keep_user)
     const mergedColor = result.merged.styles.find(
-      (s: any) => s.property === "color"
+      (s: StyleDecl) => s.property === "color"
     );
     expect(mergedColor?.value).toEqual(keyword("blue"));
     const mergedTitle = result.merged.instances.find(
-      (i: any) => i.component === "Heading"
+      (i: Instance) => i.component === "Heading"
     );
     expect(mergedTitle?.children).toEqual([textChild("User Title")]);
 
     // Step 3: Extract id-based patches
-    const stylePatches: any[] = [];
+    const stylePatches: StyleDecl[] = [];
     const changedChildren: Array<{
       id: string;
       children: Instance["children"];
     }> = [];
     const oldStylesMap = new Map(
-      userFrag.styles.map((s: any) => [
+      userFrag.styles.map((s: StyleDecl) => [
         `${s.breakpointId}:${s.styleSourceId}:${s.property}`,
         s,
       ])
@@ -163,10 +166,12 @@ describe("Template Sync — Integration (full pipeline)", () => {
       const key = `${s.breakpointId}:${s.styleSourceId}:${s.property}`;
       const old = oldStylesMap.get(key);
       if (!old || JSON.stringify(old) !== JSON.stringify(s)) {
-        stylePatches.push({ id: key, value: s });
+        stylePatches.push(s);
       }
     }
-    const oldInstMap = new Map(userFrag.instances.map((i: any) => [i.id, i]));
+    const oldInstMap = new Map(
+      userFrag.instances.map((i: Instance) => [i.id, i])
+    );
     for (const inst of result.merged.instances) {
       const old = oldInstMap.get(inst.id);
       if (
@@ -224,13 +229,13 @@ describe("Template Sync — Integration (full pipeline)", () => {
 
     // Style should have been updated from blue to red
     const mergedColor = result.merged.styles.find(
-      (s: any) => s.property === "color"
+      (s: StyleDecl) => s.property === "color"
     );
     expect(mergedColor?.value).toEqual(keyword("red"));
 
     // Text should have been updated
     const mergedTitle = result.merged.instances.find(
-      (i: any) => i.component === "Heading"
+      (i: Instance) => i.component === "Heading"
     );
     expect(mergedTitle?.children).toEqual([textChild("Hero Title")]);
   });
@@ -283,12 +288,12 @@ describe("Template Sync — Integration (full pipeline)", () => {
 
     // Template values applied despite user overrides
     const mergedColor = result.merged.styles.find(
-      (s: any) => s.property === "color"
+      (s: StyleDecl) => s.property === "color"
     );
     expect(mergedColor?.value).toEqual(keyword("red"));
 
     const mergedTitle = result.merged.instances.find(
-      (i: any) => i.component === "Heading"
+      (i: Instance) => i.component === "Heading"
     );
     expect(mergedTitle?.children).toEqual([textChild("Hero Title")]);
   });
