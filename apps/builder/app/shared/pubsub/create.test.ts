@@ -326,7 +326,7 @@ describe("createPubsub", () => {
   });
 
   describe("message unwrapping and validation", () => {
-    test("should reject invalid payload (not an object)", () => {
+    test("should silently ignore non-object payload", () => {
       global.window.self = asWindow(global.window);
       global.window.top = asWindow(global.window);
 
@@ -337,77 +337,84 @@ describe("createPubsub", () => {
 
       const messageHandler = addEventListenerSpy.mock.calls[0][1];
 
-      // Mock console.error to avoid test output noise
+      messageHandler({ data: "invalid" });
+
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    test("should silently ignore payload without token", () => {
+      global.window.self = asWindow(global.window);
+      global.window.top = asWindow(global.window);
+
+      const pubsub = createPubsub<TestPublishMap>();
+
+      const handler = vi.fn();
+      pubsub.subscribe("testAction", handler);
+
+      const messageHandler = addEventListenerSpy.mock.calls[0][1];
+
+      messageHandler({ data: { action: { type: "testAction" } } });
+
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    test("should silently ignore payload with invalid token", () => {
+      global.window.self = asWindow(global.window);
+      global.window.top = asWindow(global.window);
+
+      const pubsub = createPubsub<TestPublishMap>();
+
+      const handler = vi.fn();
+      pubsub.subscribe("testAction", handler);
+
+      const messageHandler = addEventListenerSpy.mock.calls[0][1];
+
+      const consoleWarnSpy = vi
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
+
+      messageHandler({
+        data: {
+          action: { type: "testAction" },
+          token: "invalid-token",
+        },
+      });
+
+      expect(handler).not.toHaveBeenCalled();
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        "Pubsub: message with invalid token ignored",
+        { action: { type: "testAction" }, token: "invalid-token" }
+      );
+      consoleWarnSpy.mockRestore();
+    });
+
+    test("should log error for wrapped payload without action", () => {
+      global.window.self = asWindow(global.window);
+      global.window.top = asWindow(global.window);
+
+      const pubsub = createPubsub<TestPublishMap>();
+
+      const handler = vi.fn();
+      pubsub.subscribe("testAction", handler);
+
+      const messageHandler = addEventListenerSpy.mock.calls[0][1];
+
       const consoleErrorSpy = vi
         .spyOn(console, "error")
         .mockImplementation(() => {});
 
-      expect(() => {
-        messageHandler({ data: "invalid" });
-      }).toThrow("Invalid payload");
+      messageHandler({
+        data: {
+          token: "development-token",
+        },
+      });
 
+      expect(handler).not.toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "Invalid payload",
-        "invalid"
+        "Pubsub: wrapped message missing action field",
+        { token: "development-token" }
       );
       consoleErrorSpy.mockRestore();
-    });
-
-    test("should reject payload without token", () => {
-      global.window.self = asWindow(global.window);
-      global.window.top = asWindow(global.window);
-
-      const pubsub = createPubsub<TestPublishMap>();
-
-      const handler = vi.fn();
-      pubsub.subscribe("testAction", handler);
-
-      const messageHandler = addEventListenerSpy.mock.calls[0][1];
-
-      expect(() => {
-        messageHandler({ data: { action: { type: "testAction" } } });
-      }).toThrow("Invalid payload, not wrapped");
-    });
-
-    test("should reject payload with invalid token", () => {
-      global.window.self = asWindow(global.window);
-      global.window.top = asWindow(global.window);
-
-      const pubsub = createPubsub<TestPublishMap>();
-
-      const handler = vi.fn();
-      pubsub.subscribe("testAction", handler);
-
-      const messageHandler = addEventListenerSpy.mock.calls[0][1];
-
-      expect(() => {
-        messageHandler({
-          data: {
-            action: { type: "testAction" },
-            token: "invalid-token",
-          },
-        });
-      }).toThrow("Invalid token");
-    });
-
-    test("should reject payload without action", () => {
-      global.window.self = asWindow(global.window);
-      global.window.top = asWindow(global.window);
-
-      const pubsub = createPubsub<TestPublishMap>();
-
-      const handler = vi.fn();
-      pubsub.subscribe("testAction", handler);
-
-      const messageHandler = addEventListenerSpy.mock.calls[0][1];
-
-      expect(() => {
-        messageHandler({
-          data: {
-            token: "development-token",
-          },
-        });
-      }).toThrow("Invalid payload, not wrapped");
     });
 
     test("should hide token from subsequent subscribers", () => {
