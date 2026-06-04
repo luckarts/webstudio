@@ -119,6 +119,7 @@ export const templateSyncRouter = router({
       const isAuthorized = await authorizeProject.checkProjectPermit(
         input.projectId,
         "edit",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ctx.authorization as any,
         client
       );
@@ -138,6 +139,7 @@ export const templateSyncRouter = router({
         throw new Error(`Build not found: ${buildResult.error?.message}`);
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const build = buildResult.data as any;
       const parsedInstancesMap = parseInstanceData(build.instances);
       const parsedInstances = Array.from(parsedInstancesMap.values());
@@ -218,6 +220,7 @@ export const templateSyncRouter = router({
       // Generate snapshot ID (or use the one returned from DB)
       // For now, use a simple approach: fetch after insert
       const snapshotId = crypto.randomUUID();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const snapshotInsertResult = await (client as any)
         .from("BuildSnapshot")
         .insert({
@@ -285,9 +288,6 @@ export const templateSyncRouter = router({
         }
 
         // Merge
-        console.log(
-          `[sync] Merging ${outdatedTpl.templateId}: ${diff.changes.length} changes, ${diff.added.length} added`
-        );
         const result = resolveMerge(
           buildFragment,
           mergedState,
@@ -296,18 +296,12 @@ export const templateSyncRouter = router({
           new Map()
         );
         mergedState = result.merged;
-        console.log(
-          `[sync] Merged ${outdatedTpl.templateId}: ${result.conflicts.length} conflicts`
-        );
 
         // Count what changed between pre-merge and post-merge
         const preInst = buildFragment.instances.length;
         const postInst = mergedState.instances.length;
         const preStyles = buildFragment.styles.length;
         const postStyles = mergedState.styles.length;
-        console.log(
-          `[sync] Stats ${outdatedTpl.templateId}: instances ${preInst}→${postInst}, styles ${preStyles}→${postStyles}`
-        );
 
         if (result.conflicts.length > 0) {
           console.warn(
@@ -395,6 +389,7 @@ export const templateSyncRouter = router({
       const isAuthorized = await authorizeProject.checkProjectPermit(
         input.projectId,
         "edit",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ctx.authorization as any,
         client
       );
@@ -403,6 +398,7 @@ export const templateSyncRouter = router({
       }
 
       // Load snapshot
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const snapshotResult = await (client as any)
         .from("BuildSnapshot")
         .select("data")
@@ -414,6 +410,7 @@ export const templateSyncRouter = router({
         throw new Error(`Snapshot not found: ${snapshotResult.error?.message}`);
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const snapshotData = JSON.parse((snapshotResult.data as any).data);
 
       // Restore all 14 fields

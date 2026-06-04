@@ -199,7 +199,9 @@ const getInstanceStyles = (
   const selection = frag.styleSourceSelections.find(
     (s) => s.instanceId === instanceId
   );
-  if (!selection) return new Map();
+  if (!selection) {
+    return new Map();
+  }
   const srcIds = new Set(selection.values);
   const map = new Map<string, (typeof frag.styles)[number]>();
   for (const style of frag.styles) {
@@ -233,11 +235,15 @@ export const computeScopedDiff = (
   let missCount = 0;
 
   for (const [nodeId, contribution] of registered.contributions) {
-    if (seenNodes.has(nodeId)) continue;
+    if (seenNodes.has(nodeId)) {
+      continue;
+    }
     seenNodes.add(nodeId);
 
     const templateInst = templateIdx.get(nodeId);
-    if (!templateInst) continue;
+    if (!templateInst) {
+      continue;
+    }
 
     const userEntry = userIdx.get(nodeId);
 
@@ -382,7 +388,9 @@ export const resolveMerge = (
     const sel = frag.styleSourceSelections.find(
       (s) => s.instanceId === instanceId
     );
-    if (!sel) return undefined;
+    if (!sel) {
+      return undefined;
+    }
     const srcIds = new Set(sel.values);
     return frag.styles.find(
       (s) =>

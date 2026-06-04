@@ -43,8 +43,9 @@ export const RollbackPanel = ({
       });
       toast.success("Build restored to snapshot");
       onRollbackComplete();
-    } catch (error: any) {
-      toast.error(`Rollback failed: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      toast.error(`Rollback failed: ${message}`);
     } finally {
       setIsPending(false);
     }
