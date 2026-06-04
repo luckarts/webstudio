@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { useStore } from "@nanostores/react";
-import { Button, Flex, Text, toast } from "@webstudio-is/design-system";
+import {
+  Button,
+  Flex,
+  Popover,
+  PopoverContent,
+  PopoverTitle,
+  PopoverTrigger,
+  rawTheme,
+  theme,
+  toast,
+} from "@webstudio-is/design-system";
 import { $project, $buildId } from "~/shared/sync/data-stores";
 import { trpcClient } from "~/shared/trpc/trpc-client";
 import { applyTemplatePatches } from "~/shared/sync/template-patch-client";
@@ -70,60 +80,75 @@ export const TemplateSyncPanel = () => {
         ]);
       }
 
+      const appliedInstances = changedChildrenArray?.length ?? 0;
+      const parts = [];
+      if ((result.appliedProps as number) > 0)
+        parts.push(`${result.appliedProps as number} props`);
+      if ((result.appliedStyles as number) > 0)
+        parts.push(`${result.appliedStyles as number} styles`);
+      if (appliedInstances > 0) parts.push(`${appliedInstances} text nodes`);
       toast.success(
-        `Synced ${outdatedCount} template(s): ${result.appliedProps as number} props + ${result.appliedStyles as number} styles`
+        `Synced ${outdatedCount} template(s)${parts.length > 0 ? `: ${parts.join(" + ")}` : ""}`
       );
     });
   };
 
+  const isSubmitting = syncState === "submitting";
+  const hasData = Boolean(buildId && projectId);
+
   return (
-    <Flex direction="column" gap="1" css={{ px: "$2", py: "$1" }}>
-      <Flex align="center" justify="between" gap="1">
-        <Text>Templates</Text>
-        <Flex gap="1">
-          {buildId && projectId && (
+    <Popover modal>
+      <PopoverTrigger asChild>
+        <Button color="neutral" css={{ fontSize: 11, height: 24 }}>
+          Templates
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        sideOffset={Number.parseFloat(rawTheme.spacing[8])}
+        css={{ marginRight: theme.spacing[3], width: 280 }}
+      >
+        <PopoverTitle>Sync</PopoverTitle>
+        <Flex direction="column" gap="2" css={{ p: theme.spacing[5] }}>
+          <Flex gap="2">
             <Button
               color="primary"
               onClick={() => handleSync(false)}
-              disabled={syncState === "submitting"}
-              css={{ fontSize: 11, height: 24 }}
+              disabled={!hasData || isSubmitting}
+              css={{ flex: 1 }}
             >
-              {syncState === "submitting" ? "Syncing..." : "Sync"}
+              {isSubmitting ? "Syncing…" : "Sync"}
             </Button>
-          )}
-          {buildId && projectId && (
             <Button
               color="neutral"
               onClick={() => handleSync(true)}
-              disabled={syncState === "submitting"}
-              css={{ fontSize: 11, height: 24 }}
+              disabled={!hasData || isSubmitting}
+              css={{ flex: 1 }}
             >
-              Force
+              Force sync
             </Button>
-          )}
-          {buildId && projectId && (
+          </Flex>
+
+          {snapshots.length > 0 && (
             <Button
               color="ghost"
               onClick={() => setShowRollback(!showRollback)}
-              css={{ fontSize: 11 }}
+              css={{ alignSelf: "flex-start" }}
             >
-              History
+              {showRollback ? "Hide history" : `History (${snapshots.length})`}
             </Button>
           )}
-        </Flex>
-      </Flex>
 
-      {showRollback && buildId && projectId && (
-        <RollbackPanel
-          buildId={buildId}
-          projectId={projectId}
-          snapshots={snapshots}
-          onRollbackComplete={() => {
-            setSnapshots([]);
-          }}
-          onBack={() => setShowRollback(false)}
-        />
-      )}
-    </Flex>
+          {showRollback && buildId && projectId && (
+            <RollbackPanel
+              buildId={buildId}
+              projectId={projectId}
+              snapshots={snapshots}
+              onRollbackComplete={() => setSnapshots([])}
+              onBack={() => setShowRollback(false)}
+            />
+          )}
+        </Flex>
+      </PopoverContent>
+    </Popover>
   );
 };
