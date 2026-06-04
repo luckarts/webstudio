@@ -15,7 +15,7 @@ export type StyleDiff = {
 };
 
 export type Change = {
-  type: "prop" | "style";
+  type: "prop" | "style" | "children";
   nodeId: string;
   id: string;
   oldValue: unknown;
@@ -314,6 +314,30 @@ export const computeScopedDiff = (
         });
       }
     }
+
+    // Compare text-only children (leaf nodes). Instance-ref children are
+    // structural and handled by the merge engine separately.
+    const templateTextChildren = templateInst.children.filter(
+      (c) => c.type === "text"
+    );
+    const allTemplateChildrenAreText =
+      templateTextChildren.length === templateInst.children.length;
+    if (allTemplateChildrenAreText && templateInst.children.length > 0) {
+      const userInst = mergedState.instances.find((i) => i.id === userEntry.id);
+      if (
+        userInst &&
+        JSON.stringify(templateInst.children) !==
+          JSON.stringify(userInst.children)
+      ) {
+        changes.push({
+          type: "children",
+          nodeId,
+          id: userEntry.id,
+          oldValue: userInst.children,
+          newValue: templateInst.children,
+        });
+      }
+    }
   }
 
   return { changes, added, removed };
@@ -413,6 +437,30 @@ export const resolveMerge = (
         (mergedStyle as { value: unknown }).value = change.newValue;
       }
 
+      continue;
+    }
+
+    // Children change (text-only leaf nodes)
+    if (change.type === "children") {
+      const originalInst = original.instances.find((i) => i.id === change.id);
+      const userInst = userState.instances.find((i) => i.id === change.id);
+      const hasConflict =
+        JSON.stringify(originalInst?.children) !==
+        JSON.stringify(userInst?.children);
+
+      if (hasConflict && resolvedConflicts.get(change.id) !== true) {
+        conflicts.push({
+          change,
+          userValue: userInst?.children,
+          templateValue: change.newValue,
+        });
+        continue;
+      }
+
+      const mergedInst = merged.instances.find((i) => i.id === change.id);
+      if (mergedInst) {
+        mergedInst.children = change.newValue as Instance["children"];
+      }
       continue;
     }
 
