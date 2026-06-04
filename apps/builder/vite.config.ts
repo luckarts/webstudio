@@ -98,13 +98,18 @@ export default defineConfig(({ mode }) => {
       // Needed for SSL
       proxy: {},
 
-      https: {
-        // Certs hors repo via WSTD_HTTPS_DIR (branche-proof), fallback ../../https.
-        key: readFileSync(`${env.WSTD_HTTPS_DIR ?? "../../https"}/privkey.pem`),
-        cert: readFileSync(
-          `${env.WSTD_HTTPS_DIR ?? "../../https"}/fullchain.pem`
-        ),
-      },
+      https:
+        // SSL certs only needed for local dev server, not for production builds
+        mode === "development"
+          ? {
+              key: readFileSync(
+                `${env.WSTD_HTTPS_DIR ?? "../../https"}/privkey.pem`
+              ),
+              cert: readFileSync(
+                `${env.WSTD_HTTPS_DIR ?? "../../https"}/fullchain.pem`
+              ),
+            }
+          : undefined,
       cors: ((
         req: IncomingMessage,
         callback: (error: Error | null, options: CorsOptions | null) => void
