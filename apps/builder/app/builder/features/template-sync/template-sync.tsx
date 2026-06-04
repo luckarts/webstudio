@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useStore } from "@nanostores/react";
+import type { Instance } from "@webstudio-is/sdk";
 import {
   Button,
   Flex,
@@ -50,7 +51,7 @@ export const TemplateSyncPanel = () => {
           typeof applyTemplatePatches
         >[0]["styles"]) ?? [];
       const changedChildrenArray = result.changedChildren as
-        | Array<{ id: string; children: unknown }>
+        | Array<{ id: string; children: Instance["children"] }>
         | undefined;
       const changedChildren =
         changedChildrenArray && changedChildrenArray.length > 0
