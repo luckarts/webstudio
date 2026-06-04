@@ -292,7 +292,7 @@ export const computeScopedDiff = (
       }
     }
 
-    for (const [bpPropKey, templateStyle] of templateStyles) {
+    for (const [, templateStyle] of templateStyles) {
       const templateProp = templateStyle.property;
       const mergedStyle = mergedByProperty.get(templateProp);
 
