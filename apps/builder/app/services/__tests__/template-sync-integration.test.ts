@@ -1,16 +1,12 @@
 import { describe, it, expect } from "vitest";
-import type { Instance, Prop, StyleDecl, StyleValue } from "@webstudio-is/sdk";
+import type { Instance, Prop, StyleDecl } from "@webstudio-is/sdk";
+import type { StyleValue } from "@webstudio-is/css-engine";
 import type { Change } from "@webstudio-is/template";
 import {
-  buildParentMap,
-  getAncestors,
-  indexByNodeId,
   computeScopedDiff,
   resolveMerge,
   copySubtree,
 } from "@webstudio-is/template";
-import { computeNodeId, computeContributions } from "@webstudio-is/template";
-import type { TemplateContributions } from "@webstudio-is/template";
 
 // ---------------------------------------------------------------------------
 // Helpers

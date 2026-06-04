@@ -1,8 +1,13 @@
 import path, { resolve } from "node:path";
-import { defineConfig, loadEnv, type CorsOptions } from "vite";
+import {
+  defineConfig,
+  loadEnv,
+  type CorsOptions,
+  type ViteDevServer,
+} from "vite";
 import { vitePlugin as remix } from "@remix-run/dev";
 import { vercelPreset } from "@vercel/remix/vite";
-import type { IncomingMessage } from "node:http";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import pc from "picocolors";
 
 import { readFileSync, existsSync } from "node:fs";
@@ -53,25 +58,27 @@ export default defineConfig(async ({ mode }) => {
       }),
       {
         name: "request-timing-logger",
-        configureServer(server) {
-          server.middlewares.use((req, res, next) => {
-            const start = Date.now();
-            res.on("finish", () => {
-              const duration = Date.now() - start;
-              if (
-                !(
-                  req.url?.startsWith("/@") ||
-                  req.url?.startsWith("/app") ||
-                  req.url?.includes("/node_modules")
-                )
-              ) {
-                console.info(
-                  `[${req.method}] ${req.url} - ${duration}ms : ${pc.dim(req.headers.host)}`
-                );
-              }
-            });
-            next();
-          });
+        configureServer(server: ViteDevServer) {
+          server.middlewares.use(
+            (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+              const start = Date.now();
+              res.on("finish", () => {
+                const duration = Date.now() - start;
+                if (
+                  !(
+                    req.url?.startsWith("/@") ||
+                    req.url?.startsWith("/app") ||
+                    req.url?.includes("/node_modules")
+                  )
+                ) {
+                  console.info(
+                    `[${req.method}] ${req.url} - ${duration}ms : ${pc.dim(req.headers.host)}`
+                  );
+                }
+              });
+              next();
+            }
+          );
         },
       },
     ],

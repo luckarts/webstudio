@@ -297,12 +297,6 @@ export const templateSyncRouter = router({
         );
         mergedState = result.merged;
 
-        // Count what changed between pre-merge and post-merge
-        const preInst = buildFragment.instances.length;
-        const postInst = mergedState.instances.length;
-        const preStyles = buildFragment.styles.length;
-        const postStyles = mergedState.styles.length;
-
         if (result.conflicts.length > 0) {
           console.warn(
             `[template-sync] Conflicts detected for template ${outdatedTpl.templateId}:`,
