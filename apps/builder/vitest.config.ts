@@ -5,10 +5,6 @@ import { vercelPreset } from "@vercel/remix/vite";
 import type { IncomingMessage } from "node:http";
 import pc from "picocolors";
 
-import {
-  getAuthorizationServerOrigin,
-  isBuilderUrl,
-} from "./app/shared/router-utils/origins";
 import { readFileSync, existsSync } from "node:fs";
 import fg from "fast-glob";
 
@@ -25,13 +21,18 @@ const conditions = hasPrivateFolders
   ? ["webstudio-private", "webstudio"]
   : ["webstudio"];
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(async ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   if (mode === "development") {
     // Enable self-signed certificates for development service 2 service fetch calls.
     // This is particularly important for secure communication with the oauth.ws.token endpoint.
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   }
+
+  // Lazy import to avoid pulling @webstudio-is/http-client (via origins.ts)
+  // into vitest config loading, where the package isn't built yet.
+  const origins =
+    mode !== "test" ? await import("./app/shared/router-utils/origins") : null;
 
   return {
     plugins: [
@@ -114,10 +115,14 @@ export default defineConfig(({ mode }) => {
           if (req.headers.origin != null && req.url != null) {
             const url = new URL(req.url, `https://${req.headers.host}`);
 
+            // origins only loaded in non-test mode above, guaranteed non-null here
             // Allow CORS for /builder-logout path when requested from the authorization server
-            if (url.pathname === "/builder-logout" && isBuilderUrl(url.href)) {
+            if (
+              url.pathname === "/builder-logout" &&
+              origins!.isBuilderUrl(url.href)
+            ) {
               return callback(null, {
-                origin: getAuthorizationServerOrigin(url.href),
+                origin: origins!.getAuthorizationServerOrigin(url.href),
                 preflightContinue: false,
                 credentials: true,
               });
