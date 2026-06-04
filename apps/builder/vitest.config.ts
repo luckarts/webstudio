@@ -24,15 +24,20 @@ const conditions = hasPrivateFolders
 export default defineConfig(async ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   if (mode === "development") {
-    // Enable self-signed certificates for development service 2 service fetch calls.
-    // This is particularly important for secure communication with the oauth.ws.token endpoint.
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   }
 
-  // Lazy import to avoid pulling @webstudio-is/http-client (via origins.ts)
-  // into vitest config loading, where the package isn't built yet.
-  const origins =
-    mode !== "test" ? await import("./app/shared/router-utils/origins") : null;
+  // Dynamic import with non-static path so esbuild doesn't resolve it during config bundling.
+  // Avoids pulling @webstudio-is/http-client (via origins.ts) at config load time,
+  // where the package isn't built yet. Only used for dev server CORS, never in test mode.
+  let isBuilderUrl: (url: string) => boolean = () => false;
+  let getAuthorizationServerOrigin: (url: string) => string = () => "";
+  if (mode !== "test") {
+    const importPath = "./app/shared/router-utils/origins";
+    const origins = await import(importPath);
+    isBuilderUrl = origins.isBuilderUrl;
+    getAuthorizationServerOrigin = origins.getAuthorizationServerOrigin;
+  }
 
   return {
     plugins: [
@@ -94,35 +99,30 @@ export default defineConfig(async ({ mode }) => {
       "process.env.NODE_ENV": JSON.stringify(mode),
     },
     server: {
-      // Service-to-service OAuth token call requires a specified host for the wstd.dev domain
       host: "wstd.dev",
-      // Needed for SSL
       proxy: {},
-
-      https: {
-        // Certs hors repo via WSTD_HTTPS_DIR (branche-proof), fallback ../../https.
-        key: readFileSync(`${env.WSTD_HTTPS_DIR ?? "../../https"}/privkey.pem`),
-        cert: readFileSync(
-          `${env.WSTD_HTTPS_DIR ?? "../../https"}/fullchain.pem`
-        ),
-      },
+      https:
+        mode === "development"
+          ? {
+              key: readFileSync(
+                `${env.WSTD_HTTPS_DIR ?? "../../https"}/privkey.pem`
+              ),
+              cert: readFileSync(
+                `${env.WSTD_HTTPS_DIR ?? "../../https"}/fullchain.pem`
+              ),
+            }
+          : undefined,
       cors: ((
         req: IncomingMessage,
         callback: (error: Error | null, options: CorsOptions | null) => void
       ) => {
-        // Handle CORS preflight requests in development to mimic Remix production behavior
         if (req.method === "OPTIONS" || req.method === "POST") {
           if (req.headers.origin != null && req.url != null) {
             const url = new URL(req.url, `https://${req.headers.host}`);
 
-            // origins only loaded in non-test mode above, guaranteed non-null here
-            // Allow CORS for /builder-logout path when requested from the authorization server
-            if (
-              url.pathname === "/builder-logout" &&
-              origins!.isBuilderUrl(url.href)
-            ) {
+            if (url.pathname === "/builder-logout" && isBuilderUrl(url.href)) {
               return callback(null, {
-                origin: origins!.getAuthorizationServerOrigin(url.href),
+                origin: getAuthorizationServerOrigin(url.href),
                 preflightContinue: false,
                 credentials: true,
               });
@@ -130,7 +130,6 @@ export default defineConfig(async ({ mode }) => {
           }
 
           if (req.method === "OPTIONS") {
-            // Respond with method not allowed for other preflight requests
             return callback(null, {
               preflightContinue: false,
               optionsSuccessStatus: 405,
@@ -138,7 +137,6 @@ export default defineConfig(async ({ mode }) => {
           }
         }
 
-        // Disable CORS for all other requests
         return callback(null, {
           origin: false,
         });
