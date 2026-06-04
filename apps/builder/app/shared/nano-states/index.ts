@@ -23,4 +23,3 @@ export * from "./canvas";
 export * from "./pages";
 export * from "./variables";
 export * from "./components";
-export * from "./template-binding";

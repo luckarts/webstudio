@@ -37,9 +37,13 @@ export const TemplateSyncPanel = () => {
         (result.stylePatches as Parameters<
           typeof applyTemplatePatches
         >[0]["styles"]) ?? [];
-      const changedChildren = result.changedChildren as Parameters<
-        typeof applyTemplatePatches
-      >[0]["changedChildren"];
+      const changedChildrenArray = result.changedChildren as
+        | Array<{ id: string; children: unknown }>
+        | undefined;
+      const changedChildren =
+        changedChildrenArray && changedChildrenArray.length > 0
+          ? new Map(changedChildrenArray.map((c) => [c.id, c.children]))
+          : undefined;
 
       if (
         propPatches.length > 0 ||
