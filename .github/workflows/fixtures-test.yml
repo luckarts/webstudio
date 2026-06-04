@@ -37,6 +37,7 @@ jobs:
       AUTH_SECRET: test
       BUILDER_URL_DEPRECATED: ${{ inputs.builder-url }}
       BUILDER_HOST: ${{ inputs.builder-host }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
     steps:
       - uses: actions/checkout@v4
