@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
-import type { Instance, StyleDecl, StyleValue } from "@webstudio-is/sdk";
+import type { Instance, StyleDecl } from "@webstudio-is/sdk";
+import type { StyleValue, StyleProperty } from "@webstudio-is/css-engine";
 import {
   buildParentMap,
   getAncestors,
@@ -20,23 +21,8 @@ const keyword = (value: string): StyleValue => ({
   value,
 });
 
-const color = (r: number, g: number, b: number, alpha = 1): StyleValue => ({
-  type: "color" as const,
-  colorSpace: "srgb" as const,
-  components: [r, g, b] as [number, number, number],
-  alpha,
-});
-
-const unit = (value: number, unitStr: string): StyleValue => ({
-  type: "unit" as const,
-  value,
-  unit: unitStr,
-});
-
 const textChild = (value: string) => ({ type: "text" as const, value });
 const idChild = (value: string) => ({ type: "id" as const, value });
-
-type DeepWritable<T> = { -readonly [K in keyof T]: T[K] };
 
 const makeInst = (
   id: string,
@@ -244,7 +230,7 @@ test("indexByNodeIdWithSuffix: same-component siblings match via label", () => {
 const makeStyleDecl = (
   styleSourceId: string,
   breakpointId: string,
-  property: string,
+  property: StyleProperty,
   value: StyleValue
 ): StyleDecl => ({
   styleSourceId,
