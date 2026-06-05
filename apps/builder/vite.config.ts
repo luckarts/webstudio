@@ -97,10 +97,17 @@ export default defineConfig(({ mode }) => {
       // Needed for SSL
       proxy: {},
 
-      https: {
-        key: readFileSync("../../https/privkey.pem"),
-        cert: readFileSync("../../https/fullchain.pem"),
-      },
+      https:
+        mode === "development"
+          ? {
+              key: readFileSync(
+                `${process.env.WSTD_HTTPS_DIR ?? "../../https"}/privkey.pem`
+              ),
+              cert: readFileSync(
+                `${process.env.WSTD_HTTPS_DIR ?? "../../https"}/fullchain.pem`
+              ),
+            }
+          : undefined,
       cors: ((
         req: IncomingMessage,
         callback: (error: Error | null, options: CorsOptions | null) => void
