@@ -1,0 +1,6 @@
+# Tout le repo — luckarts doit approuver toute PR
+* @luckarts
+
+# GitHub Actions
+.github/workflows/ @luckarts
+.github/actions/   @luckarts
