@@ -27,6 +27,7 @@ import type { ReactNode } from "react";
 import { CloneButton } from "./clone";
 import { $selectedPage } from "~/shared/awareness";
 import { BuilderModeDropDown } from "./builder-mode";
+import { TemplateSyncPanel } from "../template-sync/template-sync";
 
 const PagesButton = () => {
   const page = useStore($selectedPage);
@@ -111,6 +112,7 @@ export const Topbar = ({ project, hasProPlan, css, loading }: TopbarProps) => {
           <SyncStatus />
 
           <BuilderModeDropDown />
+          <TemplateSyncPanel />
           <ShareButton projectId={project.id} hasProPlan={hasProPlan} />
           <PublishButton projectId={project.id} />
           <CloneButton />

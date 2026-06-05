@@ -22,6 +22,7 @@ import {
   $styles,
   $marketplaceProduct,
   $publisherHost,
+  $buildId,
   resetDataStores,
 } from "./data-stores";
 
@@ -91,6 +92,7 @@ export const initializeClientSync = ({
             $styleSourceSelections.set(data.styleSourceSelections);
             $styles.set(data.styles);
             $marketplaceProduct.set(data.marketplaceProduct);
+            $buildId.set(data.id);
           }
 
           // Start project sync with build info from loaded data

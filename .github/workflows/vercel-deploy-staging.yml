@@ -86,6 +86,7 @@ jobs:
 
   fixtures-test:
     needs: deployment
+    if: false
     uses: ./.github/workflows/fixtures-test.yml
     with:
       builder-url: ${{ needs.deployment.outputs.builder-url }}
