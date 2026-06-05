@@ -1,0 +1,3 @@
+# GitHub Actions — seul luckarts peut approuver les modifications
+.github/workflows/ @luckarts
+.github/actions/   @luckarts
